@@ -8,6 +8,9 @@ from spy_details import spy_name, spy_salutation, spy_rating, spy_age, spy_is_on
 # function name: start_chat ,used to provide a spy chat menu to spy so that he/she could select different options
 
 def start_chat(spy_name, spy_age, spy_rating):
+
+    global spy_is_online
+
     current_status_message = None
     spy_name = spy_salutation + " " + spy_name
 
@@ -52,7 +55,8 @@ def start_chat(spy_name, spy_age, spy_rating):
                 '''
             elif choice == '6':
                 # code to exit from the spy chat menu
-                print "Thank you for using SPY CHAT.\n exiting ..."
+                print "Thank you for using SPY CHAT.\n exiting ... \nYou are offline now"
+                spy_is_online = False
                 show_menu = False
 
             else:
@@ -159,7 +163,7 @@ def add_friend():
 
          # Validating new spy eligibility
 
-         if len(new_name) > 0 and new_age > 12 and new_rating >= spy_rating:
+         if len(new_name) > 0 and new_age > 12 and new_rating >= spy_rating and new_name.isalpha():
              friends_name.append(new_name)
              friends_age.append(new_age)
              friends_rating.append(new_rating)
@@ -227,7 +231,7 @@ elif existing == "N" or existing == "n" :
 
     spy_name = raw_input("Welcome to spy chat, could you please tell me your name : ")
 
-    if len(spy_name) > 0:
+    if len(spy_name) > 0 and spy_name.isalpha():
         # If spy do not provide his/her name empty
 
         print ("\n Welcome %s. Glad to have you back with us.") % (spy_name)
@@ -253,7 +257,7 @@ elif existing == "N" or existing == "n" :
     else :
 
         # If spy provides his/her name empty
-        print "whoa! You don\'t have a name?\n Please try again \n."
+        print "whoa! You don\'t provided your name or may pressed invalid character in name\n Please try again. \n"
 
 else :
     print "You provided an invalid input. \n Please try again \n"
