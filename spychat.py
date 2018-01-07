@@ -159,11 +159,11 @@ def add_friend():
          print "Now Enter Spy's Name, Age and Spy rating respectively [press Return Key for every Input]"
          new_name, new_age, new_rating = raw_input(), input(), input()
 
-         new_name = new_salutation + ". " + new_name
-
          # Validating new spy eligibility
 
          if len(new_name) > 0 and new_age > 12 and new_rating >= spy_rating and new_name.isalpha():
+
+             new_name = new_salutation + ". " + new_name
              friends_name.append(new_name)
              friends_age.append(new_age)
              friends_rating.append(new_rating)
