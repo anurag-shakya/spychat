@@ -1,5 +1,8 @@
 # importing specific spy details from file name: spy_details
-from spy_details import SPY
+from spy_details import SPY, friend_list
+from steganography.steganography import Steganography
+from datetime import datetime
+
 
 
 
@@ -23,7 +26,7 @@ def start_chat(spy_name, spy_age, spy_rating):
         show_menu = True
         while show_menu :
 
-            print """ \t\t\t SPY CHAT MENU \n========================================================\n                 # multiline statement print
+            print """ \t\t\t SPY CHAT MENU \n========================================================\n                 
 
             select an option      
                    1. Status Update 
@@ -43,16 +46,17 @@ def start_chat(spy_name, spy_age, spy_rating):
                 number_of_friends = add_friend()
                 print "Now You\'ve %d Friend detective(s) \n" % (number_of_friends)
 
-                ''' mutiline comment  [remaining 3 modules: to be completed]
             elif choice == '3' :
-                # code to send a secret message
+                send_message()          # code to send a secret message
 
             elif choice == '4' :
-                # code to read personal message
+                read_message()          # code to read personal message
 
+                '''
             elif choice == '5' :
                 # code to read a chat from user
                 '''
+
             elif choice == '6' :
                 # code to exit from the spy chat menu
                 print "Thank you for using SPY CHAT.\n exiting ... \nYou are offline now"
@@ -160,7 +164,8 @@ def add_friend() :
     new_friend = {'name': '',
                   'salutation': '',
                   'age': 0,
-                  'rating': 0.0
+                  'rating': 0.0,
+                  'chats': []
                  }
 
     addmore = True
@@ -168,7 +173,7 @@ def add_friend() :
 
          # Asking Spy Friend's Details
 
-         new_friend['salutation'] = raw_input("Please add your  SPY friend's salutation: ")
+         new_friend['salutation'] = raw_input("Please add your SPY friend's salutation: ")
          new_friend['name'] = raw_input("Enter friend's Name: ")
          new_friend['age'] = input("Age: ")
          new_friend['rating'] = input("and Spy rating: ")
@@ -176,8 +181,6 @@ def add_friend() :
          # Validating new spy eligibility
 
          if len(new_friend['name']) > 0 and new_friend['age'] > 12 and new_friend['name'].isalpha() and new_friend['rating'] >= SPY['rating'] :
-
-             new_friend['name'] = new_friend['salutation'] + ". " + new_friend['name']
 
              friend_list.append(new_friend.copy())
 
@@ -247,13 +250,75 @@ def select_a_friend() :
             continue
 
         # extracting dictionary from list
-        temp = friend_list[index_choice -1]
-        print "% is selected" %(temp['name'])
+        temp = friend_list[int(index_choice) -1]
+        print "%s is selected" %(temp['name'])
 
-        return index_choice -1
+        return int(index_choice) -1
 
 
 # ======================  function select_a_friend() ends here  ========================================================
+
+
+
+#=======================  function send_message() starts here  =========================================================
+
+def send_message():
+
+    chosen_friend = select_a_friend()
+
+    input_image_path  =   raw_input("What is the name [with full path] of the image? ")
+    output_image_path =   "output.jpg"
+    hidden_text       =   raw_input("Type your secret message here: ")
+
+
+    try :
+        Steganography.encode(input_image_path, output_image_path, hidden_text)
+
+        new_chat = {
+            "message": hidden_text,
+            "time": datetime.now(),
+            "sent_by_me": True
+        }
+
+        friend_list[chosen_friend]['chats'].append(new_chat)
+
+        print "Your secret message has been sent!"
+
+    except Exception as e0:
+        print"image not found"
+
+
+#=======================  function send_message() ends here  ===========================================================
+
+
+
+
+#=======================  function read_message() starts here  =========================================================
+
+def read_message():
+
+    chosen_friend = select_a_friend()
+
+    output_image_path = raw_input("What is the name of the file? ")
+
+    hidden_text = Steganography.decode(output_image_path)
+
+    new_chat = {
+        "message": hidden_text,
+        "time": datetime.now(),
+        "sent_by_me": False
+    }
+
+    try :
+
+        friend_list[chosen_friend]['chats'].append(new_chat)
+        print hidden_text
+        print "Your secret message has been saved!"
+
+    except Exception as e1:
+        print"image not found"
+
+#=======================  function read_message() ends here  ===========================================================
 
 
 
@@ -264,7 +329,7 @@ def select_a_friend() :
 
 # lists/variables initialization
 STATUS_MESSAGES = ['My name is Bond, James Bond', 'Shaken, not stirred.', 'Keeping the British end up, Sir']
-friend_list = []
+
 
 print "Hello Spy!"
 print 'Let\'s get started'
