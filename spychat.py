@@ -1,5 +1,5 @@
 # importing specific spy details from file name: spy_details
-from spy_details import SPY, friend_list
+from spy_details import spy, Spy, friend_list, ChatMessage
 from steganography.steganography import Steganography
 from datetime import datetime
 
@@ -10,17 +10,14 @@ from datetime import datetime
 
 # function name: start_chat ,used to provide a spy chat menu to spy so that he/she could select different options
 
-def start_chat(spy_name, spy_age, spy_rating):
-
-    global spy_is_online
+def start_chat(spy):
 
     current_status_message = None
-    spy_name = spy_salutation + " " + spy_name
 
     # To validate the spy age, whether he/she belongs to age to be a spy.
-    if spy_age > 12 and spy_age < 50 :
+    if spy.age > 12 and spy.age < 50:
 
-        print "Authentication complete. Welcome %s, age: %d with a rating of: %.1f Proud to have you onboard" % (spy_name,spy_age,spy_rating )
+        print "Authentication complete. Welcome %s %s, age: %d with a rating of: %.1f Proud to have you onboard" % (spy.salutation ,spy.name ,spy.age, spy.rating)
 
         # loop will not end until spy want to exit the SPY CHAT MENU
         show_menu = True
@@ -60,7 +57,7 @@ def start_chat(spy_name, spy_age, spy_rating):
             elif choice == '6' :
                 # code to exit from the spy chat menu
                 print "Thank you for using SPY CHAT.\n exiting ... \nYou are offline now"
-                spy_is_online = False
+                spy.is_online = False
                 show_menu = False
 
             else :
@@ -79,8 +76,6 @@ def start_chat(spy_name, spy_age, spy_rating):
 # function name: add_status, used to choose the status of spy from older status or to add new status by appending to older status list
 
 def add_status(current_status_message) :
-
-    global STATUS_MESSAGES
 
     if current_status_message != None :
         print "Your current status message is %s " % (current_status_message)
@@ -159,32 +154,25 @@ def add_status(current_status_message) :
 
 def add_friend() :
 
-    global friend_list
-
-    new_friend = {'name': '',
-                  'salutation': '',
-                  'age': 0,
-                  'rating': 0.0,
-                  'chats': []
-                 }
+    new_friend = Spy('','',0,0.0)
 
     addmore = True
     while addmore :                                                    # to add more than one Spy friend
 
          # Asking Spy Friend's Details
 
-         new_friend['salutation'] = raw_input("Please add your SPY friend's salutation: ")
-         new_friend['name'] = raw_input("Enter friend's Name: ")
-         new_friend['age'] = input("Age: ")
-         new_friend['rating'] = input("and Spy rating: ")
-
+         new_friend.salutation = raw_input("Please add your SPY friend's salutation: ")
+         new_friend.name = raw_input("Enter friend's Name: ")
+         new_friend.age = input("Age: ")
+         new_friend.rating = input("and Spy rating: ")
+		 
          # Validating new spy eligibility
 
-         if len(new_friend['name']) > 0 and new_friend['age'] > 12 and new_friend['name'].isalpha() and new_friend['rating'] >= SPY['rating'] :
+         if len(new_friend.name) > 0 and new_friend.age > 12 and new_friend.name.isalpha() and new_friend.rating >= spy.rating:
 
-             friend_list.append(new_friend.copy())
+             friend_list.append(new_friend)
 
-             print "\n %s is added to the SPY CHAT! \n" % (new_friend['name'])
+             print "\n %s is added to the SPY CHAT! \n" % (new_friend.name)
 
          else :
              # Fried is not eligible to be a spy
@@ -219,17 +207,13 @@ def add_friend() :
 
 def select_a_friend() :
 
-    global friend_list
-
     # Showing all friends
     print "Your friends are : \n"
     i=0
     for friend in friend_list :
         i = i+1
 
-        # extracting dictionary from list
-        temp = friend
-        print "%d. %s with age:%d and rating:%.1f" %(i, temp['name'], temp['age'], temp['rating'])
+        print "%d. %s %s with age:%d and rating:%.1f" %(i, friend.salutation, friend.name, friend.age, friend.rating)
 
     while True :
 
@@ -249,9 +233,7 @@ def select_a_friend() :
             print "you need to press a numeric key only \n Please try again \n"
             continue
 
-        # extracting dictionary from list
-        temp = friend_list[int(index_choice) -1]
-        print "%s is selected" %(temp['name'])
+        print "%s %s is selected" %(friend_list[int(index_choice)-1].salutation, friend_list[int(index_choice)-1].name)
 
         return int(index_choice) -1
 
@@ -267,20 +249,16 @@ def send_message():
     chosen_friend = select_a_friend()
 
     input_image_path  =   raw_input("What is the name [with full path] of the image? ")
-    output_image_path =   "output.jpg"
+    output_image_path =   "output2.jpg"
     hidden_text       =   raw_input("Type your secret message here: ")
 
 
     try :
         Steganography.encode(input_image_path, output_image_path, hidden_text)
 
-        new_chat = {
-            "message": hidden_text,
-            "time": datetime.now(),
-            "sent_by_me": True
-        }
-
-        friend_list[chosen_friend]['chats'].append(new_chat)
+        sent_by_me = True
+        new_chat = ChatMessage(hidden_text, sent_by_me)
+        friend_list[chosen_friend].chats.append(new_chat)
 
         print "Your secret message has been sent!"
 
@@ -303,15 +281,13 @@ def read_message():
 
     hidden_text = Steganography.decode(output_image_path)
 
-    new_chat = {
-        "message": hidden_text,
-        "time": datetime.now(),
-        "sent_by_me": False
-    }
+    sent_by_me = False                  # reading mode
+
+    new_chat = ChatMessage(hidden_text, sent_by_me)
 
     try :
 
-        friend_list[chosen_friend]['chats'].append(new_chat)
+        friend_list[chosen_friend].chats.append(new_chat)
         print hidden_text
         print "Your secret message has been saved!"
 
@@ -334,53 +310,37 @@ STATUS_MESSAGES = ['My name is Bond, James Bond', 'Shaken, not stirred.', 'Keepi
 print "Hello Spy!"
 print 'Let\'s get started'
 
-question = "Do you want to continue as %s %s (y/n)? " % (SPY['salutation'], SPY['name'])
+question = "Do you want to continue as %s %s (y/n)? " % (spy.salutation, spy.name)
 existing = raw_input(question)		
 
 if existing == "Y" or existing == "y" :
 
-    spy_salutation = SPY['salutation']
-    spy_name = SPY['name']
-    spy_name = spy_salutation + ". " + spy_name
-    spy_age = SPY['age']
-    spy_rating = SPY['rating']
-    spy_is_online = SPY['is_online']
-
     # Showing SPY CHAT MENU if default spy comes to chat
-    start_chat(spy_name, spy_age, spy_rating)
+    start_chat(spy)
 
 elif existing == "N" or existing == "n" :
 
     # if some other spy comes to chat, then save his/her details and redirect to the SPY CHAT MENU
-    # python is a loosely typed (Duck Typing) programming language
-    spy_name = ''
-    spy_salutation = ''
-    spy_age = 0
-    spy_rating = 0.0
-    spy_is_online = False
+    spy = Spy('', '', 0, 0.0)
 
-    spy_name = raw_input("Welcome to spy chat, could you please tell me your name : ")
+    name = raw_input("Welcome to spy chat, could you please tell me your name : ")
 
-    if len(spy_name) > 0 and spy_name.isalpha() :
+    if len(name) > 0 and name.isalpha() :
         # If spy do not provide his/her name empty
 
-        print ("\n Welcome %s. Glad to have you back with us.") % (spy_name)
+        print ("\n Welcome %s. Glad to have you back with us.") % (name)
 
-        spy_salutation = raw_input("What should I call you (Mr. or Ms.): ")
+        salutation = raw_input("What should I call you (Mr. or Ms.): ")
 
-        spy_name = spy_salutation + ". " + spy_name
+        print "Alright %s %s I'd like to know a little bit more about you before we proceed...\n" % (salutation, name)
 
-        print "Alright %s I'd like to know a little bit more about you before we proceed...\n" % (spy_name)
+        age = input("What is your age? ")
 
-        spy_age = input("What is your age? ")
+        rating = input("What is your spy rating? ")
+		
+        spy = Spy(salutation, name, age, rating)
 
-        spy_age = int(spy_age)
-
-        spy_rating = input("What is your spy rating? ")
-
-        spy_is_online = True
-
-        start_chat(spy_name, spy_age, spy_rating)
+        start_chat(spy)
 
 
 
